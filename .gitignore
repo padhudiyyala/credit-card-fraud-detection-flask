@@ -1,0 +1,13 @@
+# Python environment & cache
+__pycache__/
+*.pyc
+venv/
+.env
+
+# Large dataset files (Kaggle dataset)
+creditcard.csv
+*.zip
+
+# OS temporary files
+.DS_Store
+Thumbs.db

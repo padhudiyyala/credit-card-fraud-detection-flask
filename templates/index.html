@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Fraud Detection Engine</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>💳 Real-Time Fraud Detection</h1>
+            <p>Enter transaction parameters to run an immediate Machine Learning security analysis.</p>
+        </header>
+
+        <div class="card">
+            <form id="fraudForm">
+                <div class="input-group">
+                    <label for="amount">Transaction Amount ($ USD)</label>
+                    <input type="number" step="0.01" id="amount" placeholder="e.g. 1250.50" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="v1">V1 Anomaly Feature (Principal Component)</label>
+                    <input type="number" step="0.01" id="v1" placeholder="e.g. -2.31" value="0.0">
+                </div>
+
+                <div class="input-group">
+                    <label for="v2">V2 Anomaly Feature (Principal Component)</label>
+                    <input type="number" step="0.01" id="v2" placeholder="e.g. 4.15" value="0.0">
+                </div>
+
+                <button type="submit" id="submitBtn">Analyze Transaction</button>
+            </form>
+        </div>
+
+        <!-- Result Container -->
+        <div id="resultCard" class="result-card hidden">
+            <h2 id="resultTitle">Analysis Outcome</h2>
+            <div class="score-container">
+                <span>Risk Probability Score:</span>
+                <strong id="riskScore">0%</strong>
+            </div>
+            <p id="resultMessage"></p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('fraudForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const btn = document.getElementById('submitBtn');
+            const resultCard = document.getElementById('resultCard');
+            
+            btn.innerText = "Analyzing...";
+            btn.disabled = true;
+
+            const payload = {
+                amount: document.getElementById('amount').value,
+                v1: document.getElementById('v1').value,
+                v2: document.getElementById('v2').value
+            };
+
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+                
+                resultCard.classList.remove('hidden', 'legit', 'fraud');
+                
+                if (data.is_fraud) {
+                    resultCard.classList.add('fraud');
+                    document.getElementById('resultTitle').innerText = "🚨 Fraud Alert";
+                } else {
+                    resultCard.classList.add('legit');
+                    document.getElementById('resultTitle').innerText = "✅ Transaction Safe";
+                }
+
+                document.getElementById('riskScore').innerText = `${data.risk_score}%`;
+                document.getElementById('resultMessage').innerText = data.message;
+
+            } catch (err) {
+                alert("An error occurred during prediction.");
+            } finally {
+                btn.innerText = "Analyze Transaction";
+                btn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
